@@ -1,11 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #f8fafc;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .game {
+            width: min(100%, 520px);
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 24px;
+            box-shadow: 0 18px 50px rgba(15, 23, 42, 0.45);
+            padding: 32px;
+            text-align: center;
+        }
+        .game h1 {
+            margin: 0 0 8px;
+            font-size: clamp(2rem, 3vw, 2.8rem);
+        }
+        .instructions {
+            margin: 0 0 24px;
+            color: #cbd5e1;
+        }
+        .choices {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .choice-button {
+            flex: 1 1 150px;
+            border: none;
+            border-radius: 16px;
+            padding: 18px 16px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.18s ease, background 0.18s ease;
+            background: rgba(148, 163, 184, 0.12);
+            color: #f8fafc;
+        }
+        .choice-button:hover {
+            transform: translateY(-2px);
+            background: rgba(148, 163, 184, 0.2);
+        }
+        .choice-button:active {
+            transform: translateY(0);
+        }
+        .result-panel {
+            padding: 18px;
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            margin-bottom: 24px;
+        }
+        .result-panel p {
+            margin: 8px 0;
+        }
+        .result {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+        .scoreboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .scorebox {
+            padding: 14px;
+            border-radius: 16px;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+        }
+        .scorebox strong {
+            display: block;
+            font-size: 0.95rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+        .scorebox span {
+            display: block;
+            font-size: 1.9rem;
+            font-weight: 700;
+        }
+        .reset-button {
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            background: transparent;
+            color: #f8fafc;
+            border-radius: 16px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .reset-button:hover {
+            background: rgba(148, 163, 184, 0.12);
+        }
+        @media (max-width: 480px) {
+            .choices {
+                flex-direction: column;
+            }
+            .scoreboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-        
+    <div class="game">
+        <h1>Rock Paper Scissors</h1>
+        <p class="instructions">Choose your move and try to beat the computer.</p>
+        <div class="choices">
+            <button class="choice-button" data-choice="rock">Rock ✊</button>
+            <button class="choice-button" data-choice="paper">Paper ✋</button>
+            <button class="choice-button" data-choice="scissors">Scissors ✌️</button>
+        </div>
+        <div class="result-panel">
+            <p class="result" id="message">Make a choice to start.</p>
+            <p>You picked: <strong id="player-choice">—</strong></p>
+            <p>Computer picked: <strong id="computer-choice">—</strong></p>
+            <div class="scoreboard">
+                <div class="scorebox">
+                    <strong>Your score</strong>
+                    <span id="player-score">0</span>
+                </div>
+                <div class="scorebox">
+                    <strong>Computer score</strong>
+                    <span id="computer-score">0</span>
+                </div>
+                <div class="scorebox">
+                    <strong>Ties</strong>
+                    <span id="ties">0</span>
+                </div>
+            </div>
+        </div>
+        <button class="reset-button" id="reset">Reset Score</button>
+    </div>
+    <script>
+        const choices = ["rock", "paper", "scissors"];
+        const winRules = {
+            rock: "scissors",
+            paper: "rock",
+            scissors: "paper"
+        };
+
+        const playerScoreEl = document.getElementById("player-score");
+        const computerScoreEl = document.getElementById("computer-score");
+        const tiesEl = document.getElementById("ties");
+        const messageEl = document.getElementById("message");
+        const playerChoiceEl = document.getElementById("player-choice");
+        const computerChoiceEl = document.getElementById("computer-choice");
+        const buttons = document.querySelectorAll(".choice-button");
+        const resetButton = document.getElementById("reset");
+
+        let playerScore = 0;
+        let computerScore = 0;
+        let ties = 0;
+
+        function getComputerChoice() {
+            const index = Math.floor(Math.random() * choices.length);
+            return choices[index];
+        }
+
+        function toLabel(choice) {
+            if (choice === "rock") return "Rock ✊";
+            if (choice === "paper") return "Paper ✋";
+            if (choice === "scissors") return "Scissors ✌️";
+            return "—";
+        }
+
+        function updateScoreboard() {
+            playerScoreEl.textContent = playerScore;
+            computerScoreEl.textContent = computerScore;
+            tiesEl.textContent = ties;
+        }
+
+        function playRound(playerSelection) {
+            const computerSelection = getComputerChoice();
+            playerChoiceEl.textContent = toLabel(playerSelection);
+            computerChoiceEl.textContent = toLabel(computerSelection);
+
+            if (playerSelection === computerSelection) {
+                ties += 1;
+                messageEl.textContent = "It's a tie! Try again.";
+                return;
+            }
+
+            if (winRules[playerSelection] === computerSelection) {
+                playerScore += 1;
+                messageEl.textContent = "You win! Great choice.";
+            } else {
+                computerScore += 1;
+                messageEl.textContent = "Computer wins this round.";
+            }
+        }
+
+        buttons.forEach(button => {
+            button.addEventListener("click", () => {
+                const playerSelection = button.dataset.choice;
+                playRound(playerSelection);
+                updateScoreboard();
+            });
+        });
+
+        resetButton.addEventListener("click", () => {
+            playerScore = 0;
+            computerScore = 0;
+            ties = 0;
+            playerChoiceEl.textContent = "—";
+            computerChoiceEl.textContent = "—";
+            messageEl.textContent = "Make a choice to start.";
+            updateScoreboard();
+        });
+    </script>
 </body>
 </html>
